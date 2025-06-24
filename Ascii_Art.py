@@ -62,4 +62,4 @@ def gen_Video(totalFrame, fps, width, height):
 gen_Video(V_Tframe, Vframe, width, height)
 video.release()
 quit()
-print("Video generado exitosamente: ASCIIvideo.mp4")
+print("generated succesfully: ASCIIvideo.mp4")
