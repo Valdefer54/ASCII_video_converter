@@ -14,11 +14,13 @@ else:
     V_Tframe =int(video.get(cv2.CAP_PROP_FRAME_COUNT)) #total number of frames in the video
     V_Tseconds = V_Tframe / Vframe
 
-def get_binary_frame(video, frame_number):
+def get_binary_frame(video, frame_number, target_width=None, target_height=None):
     video.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
     ret, frame = video.read()
     if not ret:
         return None
+    if target_width and target_height:
+        frame = cv2.resize(frame, (target_width, target_height))
     gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     binary_frame = cv2.threshold(gray_frame, 128, 255, cv2.THRESH_BINARY)[1]
     return binary_frame
@@ -47,19 +49,25 @@ def ascii_to_image(ascii_art, width, height, font_scale=0.4, font=cv2.FONT_HERSH
         cv2.putText(img, line, (5, y), font, font_scale, (0, 0, 0), 1, cv2.LINE_AA)
     return img
 
+
+
 def gen_Video(totalFrame, fps, width, height):
-    
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec para MP4
+    small_width = width // 4
+    small_height = height // 4
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter('ASCIIvideo.mp4', fourcc, fps, (width, height))
 
-    for i in range(0, totalFrame):
-        binary_frame = get_binary_frame(video, i)
-        ascii_art = Gen_Ascii_Art(binary_frame, width, height)
+    for i in range(totalFrame):
+        print(f"Procesando frame {i+1}/{totalFrame}...")
+        binary_frame = get_binary_frame(video, i, small_width, small_height)
+        if binary_frame is None:
+            print(f"Frame {i} no disponible, se omite.")
+            continue
+        ascii_art = Gen_Ascii_Art(binary_frame, small_width, small_height)
         img = ascii_to_image(ascii_art, width, height)
         out.write(img)
     out.release()
 
 gen_Video(V_Tframe, Vframe, width, height)
 video.release()
-quit()
 print("generated succesfully: ASCIIvideo.mp4")
